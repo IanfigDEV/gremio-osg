@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard do Cliente</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div id="app">
+    <h2>Dashboard do Cliente</h2>
+
+    <form method="POST">
+      <label for="mes">Escolha o mês:</label>
+      <select name="mes" required>
+        <option value="" disabled {% if not mes_selecionado %}selected{% endif %}>-- Selecione --</option>
+        {% for mes in meses %}
+          <option value="{{ mes }}" {% if mes == mes_selecionado %}selected{% endif %}>
+            {{ mes }}
+          </option>
+        {% endfor %}
+      </select>
+      <button type="submit">Ver Gastos</button>
+    </form>
+
+
+    <h3>Gastos</h3>
+    <ul>
+      {% for data, nome, valor_total, quantidade in gastos %}
+        <li>
+          {{ data }} - {{ nome }} ({{ quantidade }}) - R$ {{ "%.2f"|format(valor_total) }}
+        </li>
+      {% else %}
+        <li>Nenhuma compra encontrada para esse mês.</li>
+      {% endfor %}
+    </ul>
+
+    <p id="message">Total: R$ {{ "%.2f"|format(total) }}</p>
+
+    <form action="{{ url_for('logout') }}">
+      <button type="submit">Sair</button>
+    </form>
+  </div>
+
+
+</body>
+</html>

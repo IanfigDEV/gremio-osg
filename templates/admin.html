@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin - Controle de Estoque</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    form.inline { display: inline-block; margin-right: 10px; }
+    input[type="number"] { width: 80px; }
+    button {
+      margin-left: 5px;
+      font-size: 12px;
+      padding: 3px 6px;
+      cursor: pointer;
+    }
+
+    #editModal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border: 1px solid #ccc;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      z-index: 1000;
+      width: 300px;
+    }
+    #modalOverlay {
+      display: none;
+      position: fixed;
+      top:0; left:0; right:0; bottom:0;
+      background: rgba(0,0,0,0.5);
+      z-index: 999;
+    }
+    #editModal input[type="text"],
+    #editModal input[type="number"] {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 5px;
+      box-sizing: border-box;
+    }
+    #editModal button {
+      margin-top: 10px;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <h2>Admin - Controle de Estoque</h2>
+
+    <!-- Adicionar Produto -->
+    <form method="POST" action="{{ url_for('adicionar_produto') }}">
+      <label for="produto">Produto:</label>
+      <input name="produto" required />
+      <label for="preco">Preço:</label>
+      <input name="preco" type="number" step="0.01" required />
+      <label for="estoque">Estoque:</label>
+      <input name="estoque" type="number" min="0" required />
+      <button type="submit">Adicionar Produto</button>
+    </form>
+
+    <h3>Produtos no Estoque</h3>
+    <table border="1" cellpadding="5" cellspacing="0">
+      <div id="pagination-controls" style="margin-top: 10px;"></div>
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Preço (R$)</th>
+          <th>Estoque</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for produto in produtos %}
+          <tr>
+            <td>{{ produto.nome }}</td>
+            <td>{{ "%.2f"|format(produto.preco) }}</td>
+            <td>{{ produto.estoque }}</td>
+            <td>
+              <button onclick="openEditModal({{ loop.index0 }}, '{{ produto.nome }}', {{ produto.preco }}, {{ produto.estoque }})">Editar</button>
+              <form class="inline" method="POST" action="{{ url_for('deletar_produto', index=loop.index0) }}">
+                <button type="submit" onclick="return confirm('Deseja deletar este produto?');">Deletar</button>
+              </form>
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="4">Nenhum produto cadastrado.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    
+
+    <!-- Modal Edição -->
+    <div id="modalOverlay" onclick="closeEditModal()"></div>
+    <div id="editModal">
+      <h3>Editar Produto</h3>
+      <form id="editForm" method="POST" action="">
+        <input type="text" name="novo_nome" id="novo_nome" placeholder="Novo nome" />
+        <input type="number" step="0.01" name="novo_preco" id="novo_preco" placeholder="Novo preço" />
+        <input type="number" min="0" name="novo_estoque" id="novo_estoque" placeholder="Novo estoque" />
+        <button type="submit">Salvar</button>
+        <button type="button" onclick="closeEditModal()" style="background:#ccc; margin-top: 5px;">Cancelar</button>
+      </form>
+    </div>
+
+    <h3>Clientes Cadastrados</h3>
+    <table border="1" cellpadding="5" cellspacing="0">
+      <thead>
+        <tr>
+          <th>Matrícula</th>
+          <th>Nome</th>
+          <th>Tipo</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for matricula, user in users.items() %}
+          <tr>
+            <td>{{ matricula }}</td>
+            <td>{{ user.nome }}</td>
+            <td>{{ user.tipo }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h3>Registrar Venda</h3>
+    <form method="POST" action="{{ url_for('registrar_venda') }}">
+      <label for="matricula_cliente">Matrícula Cliente:</label>
+      <input name="matricula_cliente" required />
+
+      <label for="produto_index">Produto:</label>
+      <select name="produto_index" required>
+        {% for produto in produtos %}
+          <option value="{{ loop.index0 }}">{{ produto.nome }} (Estoque: {{ produto.estoque }})</option>
+        {% endfor %}
+      </select>
+
+      <label for="quantidade">Quantidade:</label>
+      <input name="quantidade" type="number" min="1" required />
+
+      <button type="submit">Registrar Venda</button>
+    </form>
+
+    <h3>Compras de Hoje</h3>
+    <ul>
+      {% for compra in compras_hoje %}
+        <li>
+          <strong>{{ compra.matricula }}</strong> comprou <strong>{{ compra.produto }}</strong> ({{ compra.quantidade }}) por R$ {{ compra.valor_total }} em {{ compra.data }}
+        </li>
+      {% else %}
+        <li>Nenhuma compra realizada hoje.</li>
+      {% endfor %}
+    </ul>
+
+    <h3>Gerar Relatório Mensal</h3>
+    <form action="/gerar_planilha_gastos" method="POST">
+      <label for="mes">Selecione o mês:</label>
+      <select name="mes" required>
+        {% for mes in meses %}
+          <option value="{{ mes }}">{{ mes }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit">📥 Baixar Excel</button>
+    </form>
+    
+    <form action="{{ url_for('logout') }}">
+      <button type="submit">Sair</button>
+    </form>
+    
+  </div>
+
+
+  <script>
+    function openEditModal(index, nome, preco, estoque) {
+      document.getElementById('editModal').style.display = 'block';
+      document.getElementById('modalOverlay').style.display = 'block';
+      document.getElementById('novo_nome').value = nome;
+      document.getElementById('novo_preco').value = preco;
+      document.getElementById('novo_estoque').value = estoque;
+      document.getElementById('editForm').action = '/editar_produto/' + index;
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModal').style.display = 'none';
+      document.getElementById('modalOverlay').style.display = 'none';
+    }
+    
+      const rowsPerPage = 5;
+      let currentPage = 1;
+
+      function paginateTable() {
+        const rows = document.querySelectorAll("table tbody tr");
+        const totalPages = Math.ceil(rows.length / rowsPerPage);
+
+        // Oculta todas as linhas
+        rows.forEach((row, i) => {
+          row.style.display = (i >= (currentPage - 1) * rowsPerPage && i < currentPage * rowsPerPage) ? '' : 'none';
+        });
+
+        // Criar botões de navegação
+        const container = document.getElementById('pagination-controls');
+        container.innerHTML = '';
+
+        for (let i = 1; i <= totalPages; i++) {
+          const btn = document.createElement('button');
+          btn.innerText = i;
+          btn.className = i === currentPage ? 'active' : '';
+          btn.onclick = () => {
+            currentPage = i;
+            paginateTable();
+          };
+          container.appendChild(btn);
+        }
+      }
+
+      // Estilo visual para botão ativo
+      const style = document.createElement('style');
+      style.innerHTML = `
+        #pagination-controls button {
+          padding: 5px 10px;
+          margin-right: 5px;
+          cursor: pointer;
+        }
+        #pagination-controls button.active {
+          background-color: #007bff;
+          color: white;
+        }
+        table tbody tr:hover {
+          background-color: #eef;
+        }
+      `;
+      document.head.appendChild(style);
+
+      // Paginar após carregar
+      paginateTable();
+
+  </script>
+</body>
+</html>

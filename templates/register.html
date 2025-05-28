@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Registro</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div id="app">
+    <h2>Criar Conta</h2>
+    <form method="POST">
+      <label for="matricula">Matrícula:</label>
+      <input name="matricula" required>
+
+      <label for="nome">Nome Completo:</label>
+      <input name="nome" required>
+
+      <label for="senha">Senha:</label>
+      <input type="password" name="senha" required>
+
+      <button type="submit">Registrar</button>
+    </form>
+    <form action="/login">
+      <button type="submit" class="link-btn">Voltar para o login</button>
+    </form>
+  </div>
+ 
+
+</body>
+</html>

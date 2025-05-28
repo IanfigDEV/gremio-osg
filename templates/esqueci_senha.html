@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Esqueci a Senha</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div id="app">
+    <h2>Redefinir Senha</h2>
+    {% if erro %}
+      <p style="color: red;">{{ erro }}</p>
+    {% elif sucesso %}
+      <p style="color: green;">{{ sucesso }}</p>
+    {% endif %}
+    <form method="POST">
+      <label for="matricula">Digite sua Matrícula:</label>
+      <input name="matricula" required>
+      <button type="submit">Gerar Nova Senha</button>
+    </form>
+    <form action="/login">
+      <button type="submit" class="link-btn">Voltar ao login</button>
+    </form>
+  </div>
+ 
+
+</body>
+</html>
