@@ -5,14 +5,18 @@ from collections import defaultdict
 from io import BytesIO
 import pandas as pd
 import xlsxwriter
+import os
 
 app = Flask(__name__)
 app.secret_key = 'chave-secreta'
-import os
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 db_path = os.path.join(BASE_DIR, 'meubanco.db')
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# ✅ Instanciando o banco aqui:
+db = SQLAlchemy(app)
 
 class User(db.Model):
     matricula = db.Column(db.String(20), primary_key=True)
