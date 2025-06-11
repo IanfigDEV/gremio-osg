@@ -25,13 +25,13 @@
 
     <h3>Gastos</h3>
     <ul>
-      {% for data, nome, valor_total, quantidade in gastos %}
-        <li>
-          {{ data }} - {{ nome }} ({{ quantidade }}) - R$ {{ "%.2f"|format(valor_total) }}
-        </li>
-      {% else %}
-        <li>Nenhuma compra encontrada para esse mês.</li>
-      {% endfor %}
+     {% for compra in gastos %}
+  <li>
+    {{ compra.data }} - {{ compra.produto_nome }} ({{ compra.quantidade }}) - R$ {{ "%.2f"|format(compra.valor) }}
+  </li>
+{% else %}
+  <li>Nenhuma compra encontrada para esse mês.</li>
+{% endfor %}
     </ul>
 
     <p id="message">Total: R$ {{ "%.2f"|format(total) }}</p>
